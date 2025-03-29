@@ -1,8 +1,14 @@
 # asciify
 Tool for converting images to ascii art
 
--c	Colorized output
--d	Custom dimensions. Will crop and downscale. To avoid cropping, use -s
--s	Custom scale. Must be less than or equal to 1.
+-c	Enable colorized output
+
+-w  Set a custom width. Defaults to 40
+
+-h  Set a custom height.
+
+-s	Set a custom scale. Must be less than or equal to 1.
+
 -m	Choose mode. [edge, instensity, ...]
--f	write to file.
+
+-f	Write to file.
