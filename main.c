@@ -12,14 +12,14 @@ enum Mode {
 	INTENSITY,
 };
 
-const int DEFUALT_WIDTH = 30;
-const int DEFAULT_HEIGHT = 30;
+const int DEFAULT_WIDTH = 50;
+//const int DEFAULT_HEIGHT = 30;
 const char *OPTS = "cs:m:f:";
-const char PALLETE[] = " ░▒▓█";
-const int PALLETE_SIZE=5;
+const char PALLETE[] = " .,-=oab0#@";
+const int PALLETE_SIZE=11;
 int TRUECOLOR = false;
 
-int parse_args(int argc, char **argv, char **put_name, double *put_scale, char **put_outfile, enum Mode *put_mode, int *channel_num);
+int parse_args(int argc, char **argv, char **put_name, double *put_scale, int *put_width, int *put_height, char **put_outfile, enum Mode *put_mode, int *channel_num);
 void edge_filter(char *text, unsigned char *data, int s_width, int s_height, int t_width, int t_height, int channel_num);
 void intensity_filter(char *text, unsigned char *data, int s_width, int s_height, int t_width, int t_height, int channel_num);
 int strcmp_nocase(const char *a, const char *b);
@@ -27,29 +27,43 @@ int min(int a, int b);
 int max(int a, int b); 
 
 int main(int argc, char **argv) {
-	printf("\x1b[38;2;40;177;249mTRUECOLOR\x1b[0m\n");
 	char *img_name; 
 	char *out_name;
 	int channel_num;
 	enum Mode mode;
 	double target_scale;
-	int err = parse_args(argc, argv, &img_name, &target_scale, &out_name, &mode, &channel_num);
+	int target_width;
+	int target_height;
+	int err = parse_args(argc, argv, &img_name, &target_scale, &target_height, &target_width, &out_name, &mode, &channel_num);
 	if (err) {
-		printf("arg error\n");
 		return 1;
 	}
 
 	int source_width, source_height;
 	unsigned char *img_data = stbi_load(img_name, &source_width, &source_height, NULL, channel_num);
 	if (img_data == NULL) {
-		printf("error\n");
+		printf("%s: Error opening image '%s'\n", argv[0], img_name);
 		return 2;
 	}
-	printf("no error\n");
-	printf("x:%i, y:%i\n", source_width, source_height);
 	
-	int target_width = source_width * target_scale;
-	int target_height = source_height * target_scale / 2; // divide by two because terminal cells are taller than they are wide
+	// determine dimensions of output
+	if (target_scale > 0) {
+		target_width = source_width * target_scale;
+		target_height = source_height * target_scale / 2; // divide by two because terminal cells are taller than they are wide
+	} else {
+		if (target_width == 0) {
+			if (target_height != 0) {
+				target_width = source_width/source_height * target_height;
+			} else {
+				target_width = DEFAULT_WIDTH;
+			}
+		}
+		if (target_height == 0) {
+			if (target_width != 0) { // target_width is always gonna be above 0 because either the user provided one, or it was set above
+				target_height = (double) source_height/source_width * target_width / 2; // divide by two because terminal cells are taller than they are wide
+			} 
+		}
+	}
 
 	char *text = calloc(sizeof(char), (target_height*target_width) + (target_height));
 	if (text == NULL) {
@@ -69,10 +83,12 @@ int main(int argc, char **argv) {
 }
 
 //todo: finish
-int parse_args(int argc, char **argv, char **put_name, double *put_scale, char **put_outfile, enum Mode *put_mode, int *channel_num) {
+int parse_args(int argc, char **argv, char **put_name, double *put_scale, int *put_width, int *put_height, char **put_outfile, enum Mode *put_mode, int *channel_num) {
 	// set default values
 	*put_outfile = NULL;
-	*put_scale = 1;
+	*put_scale = 0;
+	*put_width = 0;
+	*put_height = 0;
 	*channel_num = 1;
 
 	while (optind < argc) {
@@ -91,7 +107,7 @@ int parse_args(int argc, char **argv, char **put_name, double *put_scale, char *
 					} else if (strcmp_nocase(optarg, "intensity") == 0) {
 						*put_mode = INTENSITY;
 					} else {
-						printf("unrecognized mode\n"); // todo: make actual error message
+						printf("%s: Error, unrecognized mode -- %s\n", argv[0], optarg); // todo: make actual error message
 						return 1;
 					}
 					break;
@@ -111,14 +127,13 @@ int parse_args(int argc, char **argv, char **put_name, double *put_scale, char *
 	if (color_mode != NULL) {
 		TRUECOLOR = strcmp(color_mode, "truecolor") == 0 || strcmp(color_mode, "24bit") == 0;
 	}
-	printf("%i\n", TRUECOLOR);
 	return 0;
 }
 
 void edge_filter(char *text, unsigned char *data, int s_width, int s_height, int t_width, int t_height, int channel_num) {
-	for (;;) {
-
-	}
+	// for (;;) {
+	//
+	// }
 }
 
 void intensity_filter(char *text, unsigned char *data, int s_width, int s_height, int t_width, int t_height, int channel_num) {
