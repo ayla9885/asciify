@@ -1,5 +1,10 @@
-asciify: src/main.c
-	gcc -std=gnu99 -Wall -o build/asciify_dev src/main.c -g
+BUILDDIR = build
+SOURCEDIR = src
 
-release: src/main.c
+asciify: $(SOURCEDIR)/main.c
+	mkdir $(BUILDDIR) -p
+	gcc -std=gnu99 -Wall -o build/asciify_dev src/main.c -g -Og
+
+release: $(SOURCEDIR)/main.c
+	mkdir $(BUILDDIR) -p
 	gcc -std=gnu99 -Wall -Werror -o build/asciify src/main.c -O2
