@@ -1,10 +1,25 @@
-BUILDDIR = build
-SOURCEDIR = src
+BUILD_DIR = build
+SOURCE_DIR = src
+vpath %.c = $(SOURCE_DIR)
+vpath %.h = $(SOURCE_DIR)
+vpath %.o = $(BUILD_DIR)
 
-asciify: $(SOURCEDIR)/main.c
-	mkdir $(BUILDDIR) -p
-	gcc -std=gnu99 -Wall -o build/asciify_dev src/main.c -g -Og -lm
+CC = gcc
+CFLAGS = -Wall -g
 
-release: $(SOURCEDIR)/main.c
-	mkdir $(BUILDDIR) -p
-	gcc -std=gnu99 -Wall -Werror -o build/asciify src/main.c -O2 -lm
+asciify: main.o filter.o image.o helpers.o 
+	mkdir -p $(BUILD_DIR)
+	$(CC) $^ -o $(BUILD_DIR)/$@ $(CFLAGS)
+
+%.o: %.c
+	mkdir -p $(BUILD_DIR)
+	$(CC) -c $(CFLAGS) -o $(BUILD_DIR)/$@ $<
+
+main.o: filter.h image.h helpers.h
+filter.o: image.h helpers.h
+image.o: helpers.h
+helpers.o: 
+
+clean:
+	rm $(BUILD_DIR)/*.o
+	rm $(BUILD_DIR)/asciify*

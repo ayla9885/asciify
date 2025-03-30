@@ -2,10 +2,10 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdbool.h>
-#include <ctype.h>
 
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb/stb_image.h>
+#include "image.h"
+#include "filter.h"
+#include "helpers.h"
 
 enum Mode {
 	EDGE,
@@ -15,16 +15,10 @@ enum Mode {
 const int DEFAULT_WIDTH = 50;
 //const int DEFAULT_HEIGHT = 30;
 const char *OPTS = "cs:m:f:";
-const char PALLETE[] = " .,-=oab0#@";
-const int PALLETE_SIZE=11;
+const char PALATE[] = " .,-=oab0#@";
 int TRUECOLOR = false;
 
 int parse_args(int argc, char **argv, char **put_name, double *put_scale, int *put_width, int *put_height, char **put_outfile, enum Mode *put_mode, int *channel_num);
-void edge_filter(char *text, unsigned char *data, int s_width, int s_height, int t_width, int t_height, int channel_num);
-void intensity_filter(char *text, unsigned char *data, int s_width, int s_height, int t_width, int t_height, int channel_num);
-int strcmp_nocase(const char *a, const char *b);
-int min(int a, int b);
-int max(int a, int b); 
 
 int main(int argc, char **argv) {
 	char *img_name; 
@@ -39,28 +33,27 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	int source_width, source_height;
-	unsigned char *img_data = stbi_load(img_name, &source_width, &source_height, NULL, channel_num);
-	if (img_data == NULL) {
+	Image *img = image_open(img_name);
+	if (img == NULL || img->data == NULL) {
 		printf("%s: Error opening image '%s'\n", argv[0], img_name);
 		return 2;
 	}
 	
 	// determine dimensions of output
 	if (target_scale > 0) {
-		target_width = source_width * target_scale;
-		target_height = source_height * target_scale / 2; // divide by two because terminal cells are taller than they are wide
+		target_width = img->width * target_scale;
+		target_height = img->height * target_scale / 2; // divide by two because terminal cells are taller than they are wide
 	} else {
 		if (target_width == 0) {
 			if (target_height != 0) {
-				target_width = source_width/source_height * target_height;
+				target_width = img->width/img->height * target_height;
 			} else {
 				target_width = DEFAULT_WIDTH;
 			}
 		}
 		if (target_height == 0) {
 			if (target_width != 0) { // target_width is always gonna be above 0 because either the user provided one, or it was set above
-				target_height = (double) source_height/source_width * target_width / 2; // divide by two because terminal cells are taller than they are wide
+				target_height = (double) img->height/img->width * target_width / 2; // divide by two because terminal cells are taller than they are wide
 			} 
 		}
 	}
@@ -71,14 +64,15 @@ int main(int argc, char **argv) {
 	}
 	switch (mode) {
 		case EDGE:
-			edge_filter(text, img_data, source_width, source_height, target_width, target_height, channel_num);
+			edge_filter(text, img, target_width, target_height, PALATE);
 			break;
 		case INTENSITY:
-			intensity_filter(text, img_data, source_width, source_height, target_width, target_height, channel_num);
+			intensity_filter(text, img, target_width, target_height, PALATE);
 			break;
 	}
 	printf("%s", text);
 
+	image_free(img);
 	return 0;
 }
 
@@ -130,94 +124,52 @@ int parse_args(int argc, char **argv, char **put_name, double *put_scale, int *p
 	return 0;
 }
 
-void edge_filter(char *text, unsigned char *data, int s_width, int s_height, int t_width, int t_height, int channel_num) {
-	// for (;;) {
-	//
-	// }
-}
-
-void intensity_filter(char *text, unsigned char *data, int s_width, int s_height, int t_width, int t_height, int channel_num) {
-	int c_width = s_width / t_width;
-	int c_height = s_height / t_height;
-	int data_len = s_width*s_height*channel_num;
-	// for each character in the final output
-	for (int i=0; i<t_height; i++) {
-		for (int j=0; j<t_width; j++) {
-			char c = '0';
-			int intensity = 0;
-			int r_intensity = 0;
-			int g_intensity = 0;
-			int b_intensity = 0;
-			// for each pixel that influence the current character
-			for (int x=1-c_width/2; x<c_width/2; x++) {
-				for (int y=1-c_height/2; y<c_height/2; y++) {
-					// the two inner min maxes make sure the x and y coords dont
-					// go outside the image. the outer min max is another safety
-					// check to make sure the index doesn't go outisde the
-					// bounds of the data
-					int data_index = min(max( min(max(i*c_height+y, 0), s_height)*s_width*channel_num + min(max(j*c_width+x, 0), s_width)*channel_num, 0), data_len);
-					if (channel_num == 1) {
-						intensity += data[data_index];
-					} else {
-						r_intensity += data[data_index];
-						g_intensity += data[data_index+1];
-						b_intensity += data[data_index+2];
-					}
-				}
-			}
-			int pallate_index;
-			if (channel_num == 1) {
-				intensity /= c_width*c_height; // turn into average
-				pallate_index = (double) intensity/255*PALLETE_SIZE;
-			} else {
-				r_intensity /= c_width*c_height; // turn into average
-				g_intensity /= c_width*c_height; // turn into average
-				b_intensity /= c_width*c_height; // turn into average
-				pallate_index = (double) r_intensity/255*PALLETE_SIZE;
-			}
-			c = PALLETE[pallate_index];
-			text[i*(t_width+1) + j] = c;
-		}
-		text[i*(t_width+1)+t_width] = '\n';
-	}
-	text[t_height*(t_width+1)-1] = '\0';
-}
-
-// Compares string a and string b, ignoring case
-int strcmp_nocase(const char *a, const char *b) {
-	int alen = strlen(a);
-	int blen = strlen(b);
-	int dif = 0;
-	for (int i=0; i<alen && i<blen; i++) {
-		dif = tolower(a[i]) - tolower(b[i]);
-		if (dif != 0) {
-			return dif;
-		}
-	}
-	if (alen != blen) {
-		return alen - blen;
-	}
-	return dif;
-}
-
-// TODO: finish this VV
-// takes rgb values (0-255) and puts the escape code into put_str.
-// char* get_color_escape(int r, int b, int g) {
-// 	r = min(max(r, 0), 255);
+// void intensity_filter(char *text, unsigned char *data, int s_width, int s_height, int t_width, int t_height, int channel_num) {
+// 	int c_width = s_width / t_width;
+// 	int c_height = s_height / t_height;
+// 	int data_len = s_width*s_height*channel_num;
+// 	// for each character in the final output
+// 	for (int i=0; i<t_height; i++) {
+// 		for (int j=0; j<t_width; j++) {
+// 			char c = '0';
+// 			int intensity = 0;
+// 			int r_intensity = 0;
+// 			int g_intensity = 0;
+// 			int b_intensity = 0;
+// 			// for each pixel that influence the current character
+// 			for (int x=1-c_width/2; x<c_width/2; x++) {
+// 				for (int y=1-c_height/2; y<c_height/2; y++) {
+// 					// the two inner min maxes make sure the x and y coords dont
+// 					// go outside the image. the outer min max is another safety
+// 					// check to make sure the index doesn't go outisde the
+// 					// bounds of the data
+// 					int data_index = min(max( min(max(i*c_height+y, 0), s_height)*s_width*channel_num + min(max(j*c_width+x, 0), s_width)*channel_num, 0), data_len);
+// 					if (channel_num == 1) {
+// 						intensity += data[data_index];
+// 					} else {
+// 						r_intensity += data[data_index];
+// 						g_intensity += data[data_index+1];
+// 						b_intensity += data[data_index+2];
+// 					}
+// 				}
+// 			}
+// 			int pallate_index;
+// 			if (channel_num == 1) {
+// 				intensity /= c_width*c_height; // turn into average
+// 				pallate_index = (double) intensity/255*PALLETE_SIZE;
+// 			} else {
+// 				r_intensity /= c_width*c_height; // turn into average
+// 				g_intensity /= c_width*c_height; // turn into average
+// 				b_intensity /= c_width*c_height; // turn into average
+// 				pallate_index = (double) r_intensity/255*PALLETE_SIZE;
+// 			}
+// 			c = PALLETE[pallate_index];
+// 			text[i*(t_width+1) + j] = c;
+// 		}
+// 		text[i*(t_width+1)+t_width] = '\n';
+// 	}
+// 	text[t_height*(t_width+1)-1] = '\0';
 // }
 
-int min(int a, int b) {
-	if (a<b) {
-		return a;
-	} else {
-		return b;
-	}
-}
 
-int max(int a, int b) {
-	if (a>b) {
-		return a;
-	} else {
-		return b;
-	}
-}
+
