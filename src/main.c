@@ -79,6 +79,7 @@ int main(int argc, char **argv) {
 //todo: finish
 int parse_args(int argc, char **argv, char **put_name, double *put_scale, int *put_width, int *put_height, char **put_outfile, enum Mode *put_mode, int *channel_num) {
 	// set default values
+	*put_mode = INTENSITY;
 	*put_outfile = NULL;
 	*put_scale = 0;
 	*put_width = 0;

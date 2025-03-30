@@ -2,14 +2,13 @@ BUILD_DIR = build
 SOURCE_DIR = src
 vpath %.c = $(SOURCE_DIR)
 vpath %.h = $(SOURCE_DIR)
-vpath %.o = $(BUILD_DIR)
 
 CC = gcc
 CFLAGS = -Wall -g
 
 asciify: main.o filter.o image.o helpers.o 
 	mkdir -p $(BUILD_DIR)
-	$(CC) $^ -o $(BUILD_DIR)/$@ $(CFLAGS)
+	$(CC) $(addprefix $(BUILD_DIR)/,$^) -o $(BUILD_DIR)/$@ $(CFLAGS)
 
 %.o: %.c
 	mkdir -p $(BUILD_DIR)
