@@ -76,6 +76,7 @@ int main(int argc, char **argv) {
 	if (settings.out_name) {
 		out_file = fopen(settings.out_name, "w");
 		if (!out_file) {
+			printf("%s: Error: couldn't open %s\n", argv[0], settings.out_name);
 			return 5;
 		}
 	}
@@ -89,7 +90,7 @@ int main(int argc, char **argv) {
 			intensity_filter(text, img, settings.target_width, settings.target_height, PALATE, settings.colorize);
 			break;
 	}
-	if (settings.out_name != NULL) {
+	if (settings.out_name == NULL) {
 		string_println(text);
 	} else {
 		string_fwrite(text, out_file);
