@@ -7,6 +7,7 @@
 String *string_new() {
 	String *str = malloc(sizeof(*str));
 	str->length = 0;
+	str->capacity = 0;
 	str->chars = malloc(sizeof(*str->chars));
 	return str;
 }
@@ -35,14 +36,16 @@ void string_grow(String *str, int n) {
 }
 
 void string_print(const String *str) {
-	for (int i=0; i<str->length; i++) {
-		putchar(str->chars[i]);
-	}
+	fwrite(str->chars, sizeof *str->chars, str->length, stdout);
 }
 
 void string_println(const String *str) {
 	string_print(str);
 	putchar('\n');
+}
+
+void string_fwrite(const String *str, FILE *stream) {
+	fwrite(str->chars, sizeof *str->chars, str->length, stream);
 }
 
 void string_push(String *str, const char c) {
@@ -53,20 +56,38 @@ void string_push(String *str, const char c) {
 	str->chars[str->length-1] = c;
 }
 
+void string_start_color(String *str, int r, int g, int b) {
+	string_concat_lit(str, "\033[38;2;");
+	char tmp[33];
+	itoa(r, tmp, 10);
+	string_concat_lit(str, tmp);
+	string_push(str, ';');
+	itoa(g, tmp, 10);
+	string_concat_lit(str, tmp);
+	string_push(str, ';');
+	itoa(b, tmp, 10);
+	string_concat_lit(str, tmp);
+	string_concat_lit(str, "m");
+}
+
+void string_end_color(String *str) {
+	string_concat_lit(str, "\033[0m");
+}
+
 void string_pop(String *str) {
 	str->length--;
 }
 
-void string_concat(String *strA, const String *strB) {
+void string_concat(String *dest, const String *src) {
 
 }
 
-void string_concat_lit(String* str, const char* lit) {
-	int lit_len = strlen(lit);
-	int base = str->length;
-	str->length += lit_len;
-	if (str->length > str->capacity) {
-		string_grow(str, lit_len);
+void string_concat_lit(String* dest, const char* src) {
+	int src_len = strlen(src);
+	int base = dest->length;
+	dest->length += src_len;
+	if (dest->length > dest->capacity) {
+		string_grow(dest, src_len);
 	}
-	strncpy(str->chars+base, lit, lit_len);
+	strncpy(dest->chars+base, src, src_len);
 }

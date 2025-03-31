@@ -18,6 +18,7 @@ Image* image_open(char *file_name);
 void image_free(Image *img);
 Pixel* image_get_pixel(Image *img, int x, int y);
 int pixel_get_intensity(Pixel *pix);
+void pixel_add_color(Pixel *dest, const Pixel *src);
 
 
 // TODO: finish this VV

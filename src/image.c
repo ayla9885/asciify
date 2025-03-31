@@ -47,3 +47,9 @@ Pixel* image_get_pixel(Image *img, int x, int y) {
 int pixel_get_intensity(Pixel *pix) {
 	return (pix->red + pix->green + pix->blue) / 3;
 }
+
+void pixel_add_color(Pixel *dest, const Pixel *src) {
+	dest->red += src->red;
+	dest->green += src->green;
+	dest->blue += src->blue;
+}

@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <ctype.h>
+#include <stb/stb_image.h>
 
 #include "string.h"
 #include "image.h"
@@ -47,6 +48,7 @@ int main(int argc, char **argv) {
 	Image *img = image_open(settings.img_name);
 	if (img == NULL || img->data == NULL) {
 		printf("%s: Error opening image '%s'\n", argv[0], settings.img_name);
+		printf("%s\n", stbi_failure_reason());
 		return 2;
 	}
 	
@@ -69,16 +71,29 @@ int main(int argc, char **argv) {
 		}
 	}
 
+	// open output file if needed
+	FILE *out_file;
+	if (settings.out_name) {
+		out_file = fopen(settings.out_name, "w");
+		if (!out_file) {
+			return 5;
+		}
+	}
+
 	String *text = string_new();
 	switch (settings.mode) {
 		case EDGE:
-			edge_filter(text, img, settings.target_width, settings.target_height, PALATE);
+			edge_filter(text, img, settings.target_width, settings.target_height, PALATE, settings.colorize);
 			break;
 		case INTENSITY:
-			intensity_filter(text, img, settings.target_width, settings.target_height, PALATE);
+			intensity_filter(text, img, settings.target_width, settings.target_height, PALATE, settings.colorize);
 			break;
 	}
-	string_println(text);
+	if (settings.out_name != NULL) {
+		string_println(text);
+	} else {
+		string_fwrite(text, out_file);
+	}
 
 	image_free(img);
 	string_free(text);
