@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <ctype.h>
 
+#include "string.h"
 #include "image.h"
 #include "filter.h"
 #include "helpers.h"
@@ -68,10 +69,7 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	char *text = calloc(sizeof(char), (settings.target_height*settings.target_width) + (settings.target_height));
-	if (text == NULL) {
-		return 3;
-	}
+	String *text = string_new();
 	switch (settings.mode) {
 		case EDGE:
 			edge_filter(text, img, settings.target_width, settings.target_height, PALATE);
@@ -80,9 +78,10 @@ int main(int argc, char **argv) {
 			intensity_filter(text, img, settings.target_width, settings.target_height, PALATE);
 			break;
 	}
-	printf("%s", text);
+	string_println(text);
 
 	image_free(img);
+	string_free(text);
 	return 0;
 }
 
