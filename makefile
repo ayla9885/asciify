@@ -6,19 +6,20 @@ vpath %.h = $(SOURCE_DIR)
 CC = gcc
 CFLAGS = -Wall -g
 
-asciify: main.o filter.o image.o helpers.o 
+asciify: main.o filter.o image.o helpers.o string.o
 	mkdir -p $(BUILD_DIR)
-	$(CC) $(addprefix $(BUILD_DIR)/,$^) -o $(BUILD_DIR)/$@ $(CFLAGS)
+	$(CC) $^ -o $(BUILD_DIR)/$@ $(CFLAGS)
 
-%.o: %.c
-	mkdir -p $(BUILD_DIR)
-	$(CC) -c $(CFLAGS) -o $(BUILD_DIR)/$@ $<
+# %.o: %.c
+# 	mkdir -p $(BUILD_DIR)
+# 	$(CC) -c $(CFLAGS) -o $(BUILD_DIR)/$@ $<
 
-main.o: filter.h image.h helpers.h
-filter.o: image.h helpers.h
+main.o: filter.h image.h helpers.h string.h
+filter.o: image.h helpers.h string.h
 image.o: helpers.h
 helpers.o: 
+string.o:
 
 clean:
-	rm $(BUILD_DIR)/*.o
+	rm ./*.o
 	rm $(BUILD_DIR)/asciify*
