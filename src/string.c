@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <ctype.h>
 
 #include "string.h"
 
@@ -59,13 +60,13 @@ void string_push(String *str, const char c) {
 void string_start_color(String *str, int r, int g, int b) {
 	string_concat_lit(str, "\033[38;2;");
 	char tmp[33];
-	itoa(r, tmp, 10);
+	snprintf(tmp, sizeof tmp, "%i", r);
 	string_concat_lit(str, tmp);
 	string_push(str, ';');
-	itoa(g, tmp, 10);
+	snprintf(tmp, sizeof tmp, "%i", g);
 	string_concat_lit(str, tmp);
 	string_push(str, ';');
-	itoa(b, tmp, 10);
+	snprintf(tmp, sizeof tmp, "%i", b);
 	string_concat_lit(str, tmp);
 	string_concat_lit(str, "m");
 }

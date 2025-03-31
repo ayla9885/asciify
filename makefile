@@ -8,7 +8,7 @@ CFLAGS = -Wall -g
 
 asciify: main.o filter.o image.o helpers.o string.o
 	mkdir -p $(BUILD_DIR)
-	$(CC) $^ -o $(BUILD_DIR)/$@ $(CFLAGS)
+	$(CC) $^ -o $(BUILD_DIR)/$@ $(CFLAGS) -lm
 
 # %.o: %.c
 # 	mkdir -p $(BUILD_DIR)

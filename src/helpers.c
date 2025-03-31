@@ -10,7 +10,7 @@ int strcmp_nocase(const char *a, const char *b) {
 	int blen = strlen(b);
 	int dif = 0;
 	for (int i=0; i<alen && i<blen; i++) {
-		dif = tolower(a[i]) - towlower(b[i]);
+		dif = tolower(a[i]) - tolower(b[i]);
 		if (dif != 0) {
 			return dif;
 		}

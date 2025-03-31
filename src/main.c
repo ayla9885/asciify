@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <ctype.h>
 #include <stb/stb_image.h>
+#include <string.h>
 
 #include "string.h"
 #include "image.h"
@@ -32,7 +33,7 @@ struct Settings {
 
 const int DEFAULT_WIDTH = 50;
 //const int DEFAULT_HEIGHT = 30;
-const char *OPTS = "hcs:m:f:d:";
+const char *OPTS = "+hcs:m:f:d:";
 const char PALATE[] = " .,-=oab0#@";
 
 int parse_args(int argc, char **argv, struct Settings *settings);
