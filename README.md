@@ -1,14 +1,14 @@
 # asciify
 Tool for converting images to ascii art
 
--c	Enable colorized output
+## <ins>Options:</ins>
 
--w  Set a custom width. Defaults to 40
+<ins>-c</ins>,  Enable colorized output
 
--h  Set a custom height.
+<ins>-d</ins>,  Set a custom dimensions. Formatted WIDTHxHEIGHT. width and height must be integers greater than 0
 
--s	Set a custom scale. Must be less than or equal to 1.
+<ins>-s</ins>,	Set a custom scale. Must be less than or equal to 1.
 
--m	Choose mode. [edge, instensity, ...]
+<ins>-m</ins>,	Choose mode. [edge, instensity, ...]
 
--f	Write to file.
+<ins>-f</ins>,	Write to file.
