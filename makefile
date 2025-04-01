@@ -4,7 +4,7 @@ vpath %.c = $(SOURCE_DIR)
 vpath %.h = $(SOURCE_DIR)
 
 CC = gcc
-CFLAGS = -Wall -g
+CFLAGS = -Wall -g -std=gnu99
 
 asciify: main.o filter.o image.o helpers.o string.o
 	mkdir -p $(BUILD_DIR)

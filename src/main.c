@@ -37,20 +37,27 @@ const char *OPTS = "+hcs:m:f:d:";
 const char PALATE[] = " .,-=oab0#@";
 
 int parse_args(int argc, char **argv, struct Settings *settings);
+char *get_final_component(char *str);
 int get_dimensions(char *arg, int *width, int* height);
 
 int main(int argc, char **argv) {
+	argv[0] = get_final_component(argv[0]);
+
 	struct Settings settings;
 	int err = parse_args(argc, argv, &settings);
 	if (err) {
 		return 1;
 	}
 
+	if (settings.img_name == NULL) {
+		printf("%s: Error, Please provide an image\n", argv[0]);
+		return 2;
+	}
 	Image *img = image_open(settings.img_name);
 	if (img == NULL || img->data == NULL) {
-		printf("%s: Error opening image '%s'\n", argv[0], settings.img_name);
-		printf("%s\n", stbi_failure_reason());
-		return 2;
+		printf("%s: Error, couldn't open image '%s'\n", argv[0], settings.img_name);
+		printf("%s: %s\n", argv[0], stbi_failure_reason());
+		return 3;
 	}
 	
 	// determine dimensions of output
@@ -78,7 +85,7 @@ int main(int argc, char **argv) {
 		out_file = fopen(settings.out_name, "w");
 		if (!out_file) {
 			printf("%s: Error: couldn't open %s\n", argv[0], settings.out_name);
-			return 5;
+			return 4;
 		}
 	}
 
@@ -113,16 +120,21 @@ int parse_args(int argc, char **argv, struct Settings *settings) {
 	settings->target_height = 0;
 	settings->colorize = false;
 
+	opterr = 0; // disable getopt's automatic error messages
 	while (optind < argc) {
 		int opt = getopt(argc, argv, OPTS);
 		if (opt != -1) { // if next arg is an option
 			switch (opt) {
 				case 'c':	// colorize
-					settings->colorize = 3;
+					settings->colorize = true;
 					break;
 				case 's':	// scale
 					settings->target_scale = atof(optarg);
-					printf("scale: %f\n", settings->target_scale);
+					if (settings->target_scale >= 0) {
+						printf("%s: Error, unsupported scale\n", argv[0]);
+						printf("%s: Scale must be a decimal or integer number greater than 0", argv[0]);
+						return 1;
+					}
 					break;
 				case 'm':	// mode
 					if (strcmp_nocase(optarg, "edge") == 0) {
@@ -130,7 +142,8 @@ int parse_args(int argc, char **argv, struct Settings *settings) {
 					} else if (strcmp_nocase(optarg, "intensity") == 0) {
 						settings->mode = INTENSITY;
 					} else {
-						printf("%s: Error, unrecognized mode -- %s\n", argv[0], optarg); // todo: make actual error message
+						printf("%s: Error, unrecognized mode: '%s'\n", argv[0], optarg); // todo: make actual error message
+						printf("%s: Available modes: Edge, Intensity\n", argv[0]);
 						return 1;
 					}
 					break;
@@ -140,14 +153,17 @@ int parse_args(int argc, char **argv, struct Settings *settings) {
 				case 'd': // dimensions. formatted like WIDTHxHEIGHT
 					int err = get_dimensions(optarg, &settings->target_width, &settings->target_height);
 					if (err) {
-						printf("%s: Error, incorrect formatting -- %s\n", argv[0], optarg);
-						printf("Usage: -d WIDTHxHEIGHT\nWidth and height must be non-zero");
+						printf("%s: Error, incorrect formatting: '%s'\n", argv[0], optarg);
+						printf("%s: Usage: -d WIDTHxHEIGHT\n", argv[0]);
+			 			printf("%s: Width and height must be non-zero\n", argv[0]);
 						return 1;
 					}
 					break;
 				case 'h': // help
-					break;
-				default:
+					printf("HELPME");
+					return 1;
+				case '?':
+					printf("%s: Error, Unknown option: '%c'\n", argv[0], optopt);
 					return 1;
 			}
 		} else {
@@ -161,6 +177,17 @@ int parse_args(int argc, char **argv, struct Settings *settings) {
 		settings->color_support = strcmp(color_mode, "truecolor") == 0 || strcmp(color_mode, "24bit") == 0;
 	}
 	return 0;
+}
+
+char *get_final_component(char *str) {
+	int len = strlen(str);
+	int final_slash = -1;
+	for (int i=0; i<len; i++) {
+		if (str[i] == '/' || str[i] == '\\') {
+			final_slash = i+1;
+		}
+	}
+	return str + final_slash;
 }
 
 int get_dimensions(char *arg, int *width, int* height) {
