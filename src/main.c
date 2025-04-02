@@ -16,15 +16,10 @@ enum Mode {
 	INTENSITY,
 };
 
-enum ColorMode {
-	TRUECOLOR,
-};
-
 struct Settings {
 	char *img_name;
 	char *out_name;
 	bool colorize;
-	enum ColorMode color_support;
 	enum Mode mode;
 	double target_scale;
 	int target_width;
@@ -130,7 +125,7 @@ int parse_args(int argc, char **argv, struct Settings *settings) {
 					break;
 				case 's':	// scale
 					settings->target_scale = atof(optarg);
-					if (settings->target_scale >= 0) {
+					if (settings->target_scale <= 0) {
 						printf("%s: Error, unsupported scale\n", argv[0]);
 						printf("%s: Scale must be a decimal or integer number greater than 0", argv[0]);
 						return 1;
@@ -171,11 +166,11 @@ int parse_args(int argc, char **argv, struct Settings *settings) {
 			optind++;
 		}
 	}
-	// check for truecolor support
-	char *color_mode = getenv("COLORTERM");
-	if (color_mode != NULL) {
-		settings->color_support = strcmp(color_mode, "truecolor") == 0 || strcmp(color_mode, "24bit") == 0;
-	}
+	// // check for truecolor support
+	// char *color_mode = getenv("COLORTERM");
+	// if (color_mode != NULL) {
+	// 	settings->color_support = strcmp(color_mode, "truecolor") == 0 || strcmp(color_mode, "24bit") == 0;
+	// }
 	return 0;
 }
 
