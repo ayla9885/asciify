@@ -32,7 +32,7 @@ void image_free(Image *img) {
 	free(img);
 }
 
-Pixel* image_get_pixel(Image *img, int x, int y) {
+Pixel* image_get_pixel(const Image *img, int x, int y) {
 	// make sure x and y are inside the image
 	x = min(max(x, 0), img->width);
 	y = min(max(y, 0), img->height);
@@ -44,7 +44,7 @@ Pixel* image_get_pixel(Image *img, int x, int y) {
 	return img->data[index];
 }
 
-int image_get_intensity(Image *img, int x, int y) {
+int image_get_intensity(const Image *img, int x, int y) {
 	Pixel *pix = image_get_pixel(img, x, y);
 	int intensity = pixel_get_intensity(pix);
 	return intensity;
@@ -60,7 +60,17 @@ void image_edge_detect(Image *img) {
 	}
 }
 
-int pixel_get_intensity(Pixel *pix) {
+int sobel_x_kernel(const Image *img, int x, int y) {
+	int gradient = 0;
+	return gradient;
+}
+
+int sobel_y_kernel(const Image *img, int x, int y) {
+	int gradient = 0;
+	return gradient;
+}
+
+int pixel_get_intensity(const Pixel *pix) {
 	return (pix->red + pix->green + pix->blue) / 3;
 }
 

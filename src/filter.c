@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 
@@ -7,6 +6,7 @@
 #include "string.h"
 
 void intensity_filter(String *text, Image *img, int t_width, int t_height, const char *palate, bool color) {
+	image_edge_detect(img);
 	double c_width = (double) img->width / t_width;
 	double c_height = (double) img->height / t_height + 0.5;
 	int palate_size = strlen(palate);
