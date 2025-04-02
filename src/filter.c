@@ -30,7 +30,6 @@ void intensity_filter(String *text, Image *img, int t_width, int t_height, const
 					Pixel *pix = image_get_pixel(img, x, y);
 					pixel_add_color(&sum, pix);
 					pixel_count++;
-					free(pix);
 				}
 			}
 			double intensity = (double) pixel_get_intensity(&sum) / pixel_count;

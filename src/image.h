@@ -2,27 +2,25 @@
 #define IMAGE_H
 
 struct {
-	unsigned char *data;
-	int width;
-	int height;
-	int channels;
-} typedef Image;
-
-struct {
 	int red;
 	int blue;
 	int green;
 } typedef Pixel;
 
+struct {
+	Pixel **data;
+	int width;
+	int height;
+	int channels;
+} typedef Image;
+
 Image* image_open(char *file_name);
 void image_free(Image *img);
 Pixel* image_get_pixel(Image *img, int x, int y);
+int image_get_intensity(Image *img, int x, int y);
+void image_edge_detect(Image *img);
+
 int pixel_get_intensity(Pixel *pix);
 void pixel_add_color(Pixel *dest, const Pixel *src);
-
-
-// TODO: finish this VV
-// takes rgb values (0-255) and puts the escape code into put_str.
-// char* pixel_get_color_escape(Pixel *pix);
 
 #endif

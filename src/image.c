@@ -4,44 +4,60 @@
 #include <stb/stb_image.h>
 
 Image* image_open(char *file_name) {
-	Image *img = malloc(sizeof(Image));
+	Image *img = malloc(sizeof(*img));
 	if (img == NULL) {
 		return img;
 	}
-	img->data = stbi_load(file_name, &img->width, &img->height, NULL, 3);
+	unsigned char *data = stbi_load(file_name, &img->width, &img->height, NULL, 3);
 	img->channels = 3;
+	// turn data into an array of pixels
+	img->data = malloc(sizeof (*img->data) * img->width * img->height);
+	// this needs to be <= !!!!!!!!!!!!
+	for (int i=0, j=0; i <= img->width * img->height * img->channels; i += img->channels, j++) {
+		Pixel *new = malloc(sizeof (*new));
+		new->red = data[i+0];
+		new->green = data[i+1];
+		new->blue = data[i+2];
+		img->data[j] = new;
+	}
+	stbi_image_free(data);
 	return img;
 }
 
 void image_free(Image *img) {
-	stbi_image_free(img->data);
+	for (int i=0; i<img->height*img->width; i++) {
+		free(img->data[i]);
+	}
+	free(img->data);
 	free(img);
 }
 
 Pixel* image_get_pixel(Image *img, int x, int y) {
-	Pixel *pix = malloc(sizeof(Pixel));
-	if (pix == NULL) {
-		return pix;
-	}
 	// make sure x and y are inside the image
 	x = min(max(x, 0), img->width);
 	y = min(max(y, 0), img->height);
-	int datalen = img->width*img->height*img->channels;
-	int index = (y*img->width*img->channels) + (x*img->channels);
+	int datalen = img->width*img->height;
+	int index = (y*img->width) + x;
 	// make sure index is not out of bounds, this shouldn't happen
 	// but just want to be safe
 	index = min(max(index, 0), datalen);
+	return img->data[index];
+}
 
-	if (img->channels == 3) {
-		pix->red = img->data[index];
-		pix->green = img->data[index+1];
-		pix->blue = img->data[index+2];
-	} else if (img->channels == 1) {
-		pix->red = img->data[index];
-		pix->green = img->data[index];
-		pix->blue = img->data[index];
+int image_get_intensity(Image *img, int x, int y) {
+	Pixel *pix = image_get_pixel(img, x, y);
+	int intensity = pixel_get_intensity(pix);
+	return intensity;
+}
+
+// stores x gradient in red channel, 
+// y gradient in green channel, and
+// color intensity in blue channel.
+void image_edge_detect(Image *img) {
+	for (int x=0; x<img->width; x++) {
+		for (int y=0; y<img->height; y++) {
+		}
 	}
-	return pix;
 }
 
 int pixel_get_intensity(Pixel *pix) {
