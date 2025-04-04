@@ -6,21 +6,25 @@
 Image* image_open(char *file_name) {
 	Image *img = malloc(sizeof(*img));
 	if (img == NULL) {
-		return img;
+		return NULL;
 	}
-	unsigned char *data = stbi_load(file_name, &img->width, &img->height, NULL, 3);
+	unsigned char *raw_data = stbi_load(file_name, &img->width, &img->height, NULL, 3);
 	img->channels = 3;
+	if (raw_data == NULL) {
+		return NULL;
+	}
+
 	// turn data into an array of pixels
 	img->data = malloc(sizeof (*img->data) * img->width * img->height);
 	// this needs to be <= !!!!!!!!!!!!
 	for (int i=0, j=0; i <= img->width * img->height * img->channels; i += img->channels, j++) {
 		Pixel *new = malloc(sizeof (*new));
-		new->red = data[i+0];
-		new->green = data[i+1];
-		new->blue = data[i+2];
+		new->red = raw_data[i+0];
+		new->green = raw_data[i+1];
+		new->blue = raw_data[i+2];
 		img->data[j] = new;
 	}
-	stbi_image_free(data);
+	stbi_image_free(raw_data);
 	return img;
 }
 
