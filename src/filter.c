@@ -48,5 +48,6 @@ void intensity_filter(String *text, Image *img, int t_width, int t_height, const
 }
 
 void edge_filter(String *text, Image *img, int t_width, int t_height, const char *palate) {
-	printf("edge filter not implemented\n");
+	image_edge_detect(img);
+	intensity_filter(text, img, t_width, t_height, palate, false);
 }

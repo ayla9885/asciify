@@ -23,4 +23,8 @@ void image_edge_detect(Image *img);
 int pixel_get_intensity(Pixel *pix);
 void pixel_add_color(Pixel *dest, const Pixel *src);
 
+int sobel_filter_red(Image *img, int x, int y);
+int sobel_filter_green(Image *img, int x, int y);
+int sobel_filter_blue(Image *img, int x, int y);
+
 #endif

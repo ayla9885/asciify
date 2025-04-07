@@ -60,8 +60,73 @@ int image_get_intensity(Image *img, int x, int y) {
 void image_edge_detect(Image *img) {
 	for (int x=0; x<img->width; x++) {
 		for (int y=0; y<img->height; y++) {
+			Pixel *pix = image_get_pixel(img, x, y);
+			pix->red = sobel_filter_red(img, x, y);
+			pix->green = sobel_filter_green(img, x, y);
+			pix->blue = sobel_filter_blue(img, x, y);
 		}
 	}
+}
+
+int sobel_filter_red(Image *img, int x, int y) {
+	int x_gradient = 0;
+	int y_gradient = 0;
+
+	x_gradient += -1 * image_get_pixel(img, x-1, y-1)->red;
+	x_gradient += -2 * image_get_pixel(img, x-1, y  )->red;
+	x_gradient += -1 * image_get_pixel(img, x-1, y+1)->red;
+	x_gradient +=  1 * image_get_pixel(img, x+1, y-1)->red;
+	x_gradient +=  2 * image_get_pixel(img, x+1, y  )->red;
+	x_gradient +=  1 * image_get_pixel(img, x+1, y+1)->red;
+
+	y_gradient += -1 * image_get_pixel(img, x-1, y-1)->red;
+	y_gradient += -2 * image_get_pixel(img, x  , y-1)->red;
+	y_gradient += -1 * image_get_pixel(img, x+1, y-1)->red;
+	y_gradient +=  1 * image_get_pixel(img, x-1, y+1)->red;
+	y_gradient +=  2 * image_get_pixel(img, x  , y+1)->red;
+	y_gradient +=  1 * image_get_pixel(img, x+1, y+1)->red;
+
+	return min(max(sqrt(pow(x_gradient, 2) + pow(y_gradient, 2)), 0), 255);
+}
+int sobel_filter_green(Image *img, int x, int y) {
+	int x_gradient = 0;
+	int y_gradient = 0;
+
+	x_gradient += -1 * image_get_pixel(img, x-1, y-1)->green;
+	x_gradient += -2 * image_get_pixel(img, x-1, y  )->green;
+	x_gradient += -1 * image_get_pixel(img, x-1, y+1)->green;
+	x_gradient +=  1 * image_get_pixel(img, x+1, y-1)->green;
+	x_gradient +=  2 * image_get_pixel(img, x+1, y  )->green;
+	x_gradient +=  1 * image_get_pixel(img, x+1, y+1)->green;
+
+	y_gradient += -1 * image_get_pixel(img, x-1, y-1)->green;
+	y_gradient += -2 * image_get_pixel(img, x  , y-1)->green;
+	y_gradient += -1 * image_get_pixel(img, x+1, y-1)->green;
+	y_gradient +=  1 * image_get_pixel(img, x-1, y+1)->green;
+	y_gradient +=  2 * image_get_pixel(img, x  , y+1)->green;
+	y_gradient +=  1 * image_get_pixel(img, x+1, y+1)->green;
+
+	return min(max(sqrt(pow(x_gradient, 2) + pow(y_gradient, 2)), 0), 255);
+}
+int sobel_filter_blue(Image *img, int x, int y) {
+	int x_gradient = 0;
+	int y_gradient = 0;
+
+	x_gradient += -1 * image_get_pixel(img, x-1, y-1)->blue;
+	x_gradient += -2 * image_get_pixel(img, x-1, y  )->blue;
+	x_gradient += -1 * image_get_pixel(img, x-1, y+1)->blue;
+	x_gradient +=  1 * image_get_pixel(img, x+1, y-1)->blue;
+	x_gradient +=  2 * image_get_pixel(img, x+1, y  )->blue;
+	x_gradient +=  1 * image_get_pixel(img, x+1, y+1)->blue;
+
+	y_gradient += -1 * image_get_pixel(img, x-1, y-1)->blue;
+	y_gradient += -2 * image_get_pixel(img, x  , y-1)->blue;
+	y_gradient += -1 * image_get_pixel(img, x+1, y-1)->blue;
+	y_gradient +=  1 * image_get_pixel(img, x-1, y+1)->blue;
+	y_gradient +=  2 * image_get_pixel(img, x  , y+1)->blue;
+	y_gradient +=  1 * image_get_pixel(img, x+1, y+1)->blue;
+
+	return min(max(sqrt(pow(x_gradient, 2) + pow(y_gradient, 2)), 0), 255);
 }
 
 int pixel_get_intensity(Pixel *pix) {
